@@ -31,6 +31,11 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+io.configure(function () {
+  io.set("transports", ["xhr-polling"]);
+  io.set("polling duration", 10);
+});
+
 app.get('/echo', require('./routes/echo').route);
 
 server.listen(app.get('port'), function(){
