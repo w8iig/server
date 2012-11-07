@@ -1,28 +1,38 @@
 (function($) {
   $(document).ready(function() {
     var canvas = bonsai.setup({
-      runnerContext: bonsai.IframeRunnerContext
+      // runnerContext: bonsai.IframeRunnerContext
     }).run(document.getElementById('canvas'), {
       code: function() {
-        var shapes = [];
+        // var shapes = [];
         
         stage.on('message:fromOutside', function(dataFromOutside) {
           console.log(dataFromOutside);
         });
         
         var newCircle = function() {
-          var c = new Circle(0, 0, 100);
+          var c = new Circle(0, 0, 100).fill('red').stroke('black', 1);
+          c._type = 'Circle';
+          
           setupDO(c);
           c.addTo(stage)
-          shapes.push(c);
+          // shapes.push(c);
           
           return c;
         }
         
-        var setupDO = function(displayObj) {
-          displayObj.fill('red')
-            .stroke('black', 3);
+        var newRect = function() {
+          var r = new Rect(-100, 200, 200, 100).fill('green').stroke('black', 1);
+          r._type = 'Rect';
           
+          setupDO(r);
+          r.addTo(stage)
+          // shapes.push(r);
+          
+          return r;
+        }
+        
+        var setupDO = function(displayObj) {
           ['addedToStage', '_displayObjectChanged'].forEach(function(eventName) {
             displayObj.on(eventName, function(e) {
               stage.sendMessage('fromInside', {
@@ -46,7 +56,11 @@
           };
           
           displayObj.once('pointerdown', function(e) {
-            newCircle();
+            if (displayObj._type == 'Circle') {
+              newCircle();
+            } else if (displayObj._type == 'Rect') {
+              newRect();
+            }
           });
           
           displayObj.on('multi:pointerdown', function(e) {
@@ -97,9 +111,7 @@
               console.log('drag 1');
               displayObj.emit('_displayObjectChanged', {
                 x: displayObj.attr('x'),
-                y: displayObj.attr('y'),
-                width: displayObj.attr('radius'),
-                height: displayObj.attr('radius')
+                y: displayObj.attr('y')
               });
             } else if (state.touches == 2) {
               var xBefore = (state.firstTouch.x + state.secondTouch.x) / 2;
@@ -108,6 +120,7 @@
                 Math.pow(state.firstTouch.x - state.secondTouch.x, 2)
                 + Math.pow(state.firstTouch.y - state.secondTouch.y, 2)
               );
+              var alphaBefore = Math.atan((state.firstTouch.y - state.secondTouch.y) / (state.firstTouch.x - state.secondTouch.x));
               
               if (e.touchId == state.firstTouch.touchId) {
                 state.firstTouch.x = e.stageX;
@@ -124,21 +137,34 @@
                 Math.pow(state.firstTouch.x - state.secondTouch.x, 2)
                 + Math.pow(state.firstTouch.y - state.secondTouch.y, 2)
               );
+              var alphaAfter = Math.atan((state.firstTouch.y - state.secondTouch.y) / (state.firstTouch.x - state.secondTouch.x));
               
               displayObj.attr('x', displayObj.attr('x') + xAfter - xBefore);
               displayObj.attr('y', displayObj.attr('y') + yAfter - yBefore);
-              displayObj.attr('radius', displayObj.attr('radius') * distanceAfter / distanceBefore);
-              displayObj.emit('_displayObjectChanged', {
+              var eventInfo = {
                 x: displayObj.attr('x'),
-                y: displayObj.attr('y'),
-                width: displayObj.attr('radius'),
-                height: displayObj.attr('radius')
-              });
+                y: displayObj.attr('y')
+              };
+              
+              if (displayObj._type == 'Circle') {
+                displayObj.attr('radius', displayObj.attr('radius') * distanceAfter / distanceBefore);
+                eventInfo.width = displayObj.attr('radius');
+                eventInfo.height = displayObj.attr('radius');
+              } else if (displayObj._type == 'Rect') {
+                displayObj.attr('width', displayObj.attr('width') * distanceAfter / distanceBefore);
+                displayObj.attr('height', displayObj.attr('height') * distanceAfter / distanceBefore);
+                displayObj.attr('rotation', displayObj.attr('rotation') + alphaAfter - alphaBefore);
+                eventInfo.width = displayObj.attr('width');
+                eventInfo.height = displayObj.attr('height');
+              }
+              
+              displayObj.emit('_displayObjectChanged', eventInfo);
             }
           });
         }
         
         newCircle();
+        newRect();
       },
       width: $(window).width(),
       height: $(window).height()
