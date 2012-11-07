@@ -1,5 +1,5 @@
 {
-  "name": "application-name",
+  "name": "w8iig-server",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -7,7 +7,8 @@
   },
   "dependencies": {
     "express": "~3.0.1",
-    "ejs-locals": "~0.2.5",
-    "socket.io": "~0.9.11"
+    "socket.io": "~0.9.11",
+    "express-expose": "~0.3.3",
+    "jade": "~0.27.7"
   }
 }

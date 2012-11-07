@@ -1,0 +1,16 @@
+form.echo {
+}
+
+#output.echo {
+  margin-top: 5px;
+}
+  #output.echo .message {
+    clear: both;
+  }
+    #output.echo .message .author {
+      float: left;
+      width: 200px;
+    }
+    #output.echo .message .text {
+      margin-left: 200px;
+    }
