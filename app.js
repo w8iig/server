@@ -11,6 +11,7 @@ var express = require('express')
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
+var bonsai = require('bonsai');
 var config = require('./config');
 
 app.configure(function(){
@@ -32,6 +33,7 @@ app.configure('development', function(){
 });
 
 app.get('/echo', require('./routes/echo').route);
+app.get('/bonsai', require('./routes/bonsai').route);
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
