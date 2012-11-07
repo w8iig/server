@@ -11,7 +11,6 @@ var express = require('express')
 var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
-var bonsai = require('bonsai');
 var config = require('./config');
 
 app.configure(function(){
