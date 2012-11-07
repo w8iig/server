@@ -32,16 +32,23 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-app.get('/echo', require('./routes/echo').route);
-app.get('/bonsai', require('./routes/bonsai').route);
+app.get(config.echo.route, require('./routes/echo').route);
+app.get(config.bonsai.route, require('./routes/bonsai').route);
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
 
-io.sockets.on('connection', function (socket) {
+var ioEcho = io.of(config.echo.route).on('connection', function (socket) {
   socket.on(config.echo.messageFromClient, function (data) {
     data.socketId = socket.id;
-    io.sockets.emit(config.echo.messageFromServer, data);
+    ioEcho.emit(config.echo.messageFromServer, data);
+  });
+});
+
+var ioBonsai = io.of(config.bonsai.route).on('connection', function (socket) {
+  socket.on(config.bonsai.messageFromClient, function (data) {
+    data.socketId = socket.id;
+    socket.broadcast.emit(config.bonsai.messageFromServer, data);
   });
 });

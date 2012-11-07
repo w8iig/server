@@ -1,4 +1,4 @@
-var socket = io.connect(window.location.hostname);
+var socket = io.connect(window.location);
 
 socket.on(app.config.echo.messageFromServer, function (data) {
   var div = $('<div class="message" />')
