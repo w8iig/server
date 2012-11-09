@@ -1,0 +1,16 @@
+extends ../layout
+
+block head
+  
+
+block content
+  div.boards_list
+
+    div.count
+      span Boards: 
+      span= count
+    
+    ul
+      each board in boards
+        li
+          a(href='/boards/#{board.boardId}') #{board.boardId}

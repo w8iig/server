@@ -1,7 +1,10 @@
 doctype 5
 html(lang="en")
   head
-    title= title
+    if typeof(title) != 'undefined'
+      title= title
+    else
+      title Untitled
     
     link(rel='stylesheet', type='text/css', href='/stylesheets/style.css')
     

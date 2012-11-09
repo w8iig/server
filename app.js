@@ -12,11 +12,12 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 var config = require('./config');
+var db = require('./db');
 
 app.configure(function(){
   app.expose({ config: config });
   
-  app.set('port', process.env.PORT || 29690);
+  app.set('port', config.port);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.favicon());
@@ -42,6 +43,10 @@ if (process.env.PORT) {
 
 app.get(config.echo.route, require('./routes/echo').route);
 app.get(config.bonsai.route, require('./routes/bonsai').route);
+
+app.get('/', require('./routes/boards').routeRoot);
+app.get(config.boards.routeIndex, require('./routes/boards').routeIndex);
+app.get(config.boards.routeView, require('./routes/boards').routeView);
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
