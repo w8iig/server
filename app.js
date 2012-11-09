@@ -16,7 +16,7 @@ var config = require('./config');
 app.configure(function(){
   app.expose({ config: config });
   
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', process.env.PORT || 29690);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
   app.use(express.favicon());
