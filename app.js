@@ -31,10 +31,14 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-io.configure(function () {
-  io.set("transports", ["xhr-polling"]);
-  io.set("polling duration", 10);
-});
+if (process.env.PORT) {
+  io.configure(function () {
+    io.set("transports", ["xhr-polling"]);
+    io.set("polling duration", 10);
+    
+    console.log('socket.io set to use xhr-polling only (detected environment variable: PORT)');
+  });
+}
 
 app.get(config.echo.route, require('./routes/echo').route);
 app.get(config.bonsai.route, require('./routes/bonsai').route);
