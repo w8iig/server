@@ -1,10 +1,6 @@
 var config = require('../config');
 var db = require('../db');
 
-exports.routeRoot = function(req, res) {
-  res.render('error', { message: config.phrases.boards_new_unable, code: 0 });
-};
-
 exports.routeIndex = function(req, res) {
   var count = 0;
   var boards = [];

@@ -51,6 +51,7 @@ exports.phrases = {
   boards_get_requires_id:                             'board_id is required',
   board_not_found:                                    'The requested board could not be found',
 
+  collections:                                        'Collections',
   collections_new_unable:                             'Unable to create new collection',
   collections_new_requires_name:                      'collection_name is required',
   collections_get_unable:                             'An error has occured while attempting to get collection data from database',
