@@ -5,7 +5,7 @@ exports.routeIndexPost = function(req, res) {
   var collectionName = req.body.collection_name;
 
   if (!collectionName) {
-    res.send(403, { error: config.phrases.collections_new_requies_name, code: 0 });
+    res.send(403, { error: config.phrases.collections_new_requires_name, code: 0 });
     return;
   }
 
@@ -37,5 +37,45 @@ exports.routeIndexGet = function(req, res) {
     };
 
     res.send(data);
+  });
+};
+
+exports.routeView = function(req, res) {
+  var collectionId = req.params.collectionId;
+
+  if (!collectionId) {
+    res.send(403, { error: config.phrases.collections_get_requires_id, code: 0 });
+    return;
+  }
+
+  db.collections.getCollectionById(collectionId, function(get_error, collection) {
+    if (get_error) {
+      res.send(500, { error: config.phrases.collections_get_unable, code: get_error });
+      return;
+    }
+
+    if (collection == null) {
+      res.send(404, { error: config.phrases.collection_not_found, code: 0 });
+      return;
+    }
+
+    var data = db.collections.prepare(collection);
+    data.boards = [];
+    var sendData = function() {
+      res.send(data);
+    }
+
+    db.boards.getBoardsByCollectionId(collectionId, function(boards_get_error, boards) {
+      if (boards_get_error) {
+        // ignore error
+        return;
+      }
+
+      for (var i = boards.length - 1; i >= 0; i--) {
+        data.boards.push(db.boards.prepare(boards[i]));
+      };
+
+      sendData();
+    });
   });
 };

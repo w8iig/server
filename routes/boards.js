@@ -2,14 +2,7 @@ var config = require('../config');
 var db = require('../db');
 
 exports.routeRoot = function(req, res) {
-  db.boards.create(function(err, boardId) {
-    if (err) {
-      res.render('error', { message: config.phrases.boards_new_unable, code: err });
-      return;
-    }
-    
-    res.redirect(config.boards.routePrefix + boardId);
-  });
+  res.render('error', { message: config.phrases.boards_new_unable, code: 0 });
 };
 
 exports.routeIndex = function(req, res) {

@@ -32,7 +32,9 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
-if (process.env.PORT) {
+// sondh@2012-11-10
+// temporary disable socket.io transports limitation
+if (process.env.PORT && false) {
   io.configure(function () {
     io.set("transports", ["xhr-polling"]);
     io.set("polling duration", 10);
@@ -50,6 +52,10 @@ app.get(config.boards.routeView, require('./routes/boards').routeView);
 
 app.post(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexPost);
 app.get(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexGet);
+app.get(config.api.collections.routeView, require('./routes/api/collections').routeView);
+
+app.post(config.api.boards.routeIndex, require('./routes/api/boards').routeIndex);
+app.get(config.api.boards.routeView, require('./routes/api/boards').routeView);
 
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

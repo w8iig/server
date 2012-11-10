@@ -18,8 +18,16 @@ var mongodb = mongoskin.db(config.mongodb_url, { safe: true }).open(function(err
 });
 
 exports.boards = {
-  create: function(callback) {
-    // callback = function(err, newBoardId) {};
+  prepare: function(board) {
+    return {
+      boardId: board.boardId,
+      collectionId: board.collectionId,
+      created: board.created
+    };
+  },
+
+  create: function(collectionId, callback) {
+    // callback = function(err, board) {};
     if (boards == null) {
       callback(config.errors.db_boards_null, null);
       console.warn('mongodb: boards collection is null');
@@ -34,6 +42,7 @@ exports.boards = {
       
       var newBoard = {
         boardId: newBoardId,
+        collectionId: new mongodb.ObjectID(collectionId),
         created: Math.round(new Date().getTime() / 1000)
       };
 
@@ -44,7 +53,7 @@ exports.boards = {
           return;
         }
 
-        callback(0, newBoardId);
+        callback(0, insert_results[0]);
         console.log('mongodb.boards: inserted board %s (id = %s)', newBoardId, insert_results[0]._id);
       });
     });
@@ -108,6 +117,25 @@ exports.boards = {
       } else {
         callback(0, null);
       }
+    });
+  },
+
+  getBoardsByCollectionId: function(collectionId, callback) {
+    // callback = function(err, boards) {};
+    if (boards == null) {
+      callback(config.errors.db_boards_null, null);
+      console.warn('mongodb: boards collection is null');
+      return;
+    }
+    
+    boards.find({ collectionId: new mongodb.ObjectID(collectionId) }).toArray(function(find_error, find_results) {
+      if (find_error) {
+        callback(config.errors.db_find_error, null);
+        console.warn('mongodb.boards: find error (%s)', find_error.message);
+        return;
+      }
+      
+      callback(0, find_results);
     });
   }
 };
@@ -185,7 +213,7 @@ exports.collections = {
       return;
     }
     
-    collections.find({ collectionId: collectionId }).limit(2).toArray(function(find_error, find_results) {
+    collections.find({ _id: new mongodb.ObjectID(collectionId) }).limit(2).toArray(function(find_error, find_results) {
       if (find_error) {
         callback(config.errors.db_find_error, 0);
         console.warn('mongodb.collections: find error (%s)', count_error.message);
