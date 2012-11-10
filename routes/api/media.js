@@ -23,6 +23,20 @@ exports.routeIndex = function(req, res) {
 
     var media = mediaTypes.create(req.body);
 
-    res.send({ dummy: 1, media: media });
+    if (media == null) {
+      res.send(403, { error: config.phrases.media_parse_unable, code: 0 });
+      return;
+    }
+
+    db.media.insert(boardId, media.toJson(), function(insert_error, insert_media) {
+      if (insert_error) {
+        res.send(500, { error: config.phrases.boards_insert_unable, code: insert_error });
+        return;
+      }
+
+      var data = db.media.prepare(insert_media);
+
+      res.send(data);
+    });
   });
 };

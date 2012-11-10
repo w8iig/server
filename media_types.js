@@ -17,7 +17,7 @@ exports.create = function(data) {
         media = new notExports.Path(data.x, data.y, data.rotation, data.relativePoints, data.thickness, data.color);
         break;
       default:
-        console.error('Unrecognized media type %s', data.type);
+        console.warn('Unrecognized media type %s', data.type);
     }
   }
 
@@ -44,7 +44,7 @@ notExports.Media.prototype = {
   toJson: function() {
     var json = {};
     for (x in this) {
-      if (typeof this[x] != 'function') {
+      if (typeof this[x] != 'function' && x != 'error') {
         json[x] = this[x];
       }
     }
@@ -58,7 +58,7 @@ notExports.Media.prototype = {
     if (typeof number != 'string'
       || number.match(/^[0-9]+$/) == null)
     {
-      console.error('%s is not an int', number);
+      console.warn('%s is not an int', number);
       return false;
     }
 
@@ -69,7 +69,7 @@ notExports.Media.prototype = {
     if (!this._isInt(number)) return false;
     
     if (parseInt(number) < 0) {
-      console.error('%s is not a non negative int', number);
+      console.warn('%s is not a non negative int', number);
       return false;
     } else {
       return true;
@@ -79,7 +79,7 @@ notExports.Media.prototype = {
   _isString: function(string) {
     if (typeof string != 'string'
       || string.length == 0) {
-      console.error('%s is not a valid string', string);
+      console.warn('%s is not a valid string', string);
       return false;
     } else {
       return true;
@@ -90,13 +90,13 @@ notExports.Media.prototype = {
     if (typeof color != 'string'
       || (color.length != 4 && color.length != 7)
       || color[0] != '#') {
-      console.error('%s is not a hex color', color);
+      console.warn('%s is not a hex color', color);
       return false;
     }
 
     for (var i = color.length - 1; i > 0; i--) {
       if (color[i].match(/[0-9a-f]/i) == null) {
-        console.error('%s is not a hex color', color);
+        console.warn('%s is not a hex color', color);
         return false;
       }
     };
@@ -143,7 +143,7 @@ notExports.Path = function(x, y, rotation, relativePoints, thickness, color) {
     try {
       this.relativePoints = JSON.parse(this.relativePoints);
     } catch (SyntaxError) {
-      console.error('Failed to parse JSON-encoded string: %s', this.relativePoints);
+      console.warn('Failed to parse JSON-encoded string: %s', this.relativePoints);
     }
   }
   if (typeof this.relativePoints != 'object') this.error = true;
@@ -152,8 +152,8 @@ notExports.Path = function(x, y, rotation, relativePoints, thickness, color) {
     for (i in this.relativePoints) {
       if (!this._isInt(this.relativePoints[i].x)
         || !this._isInt(this.relativePoints[i].y)) {
-        console.error('Below is not a valid relative point');
-        console.error(this.relativePoints[i]);
+        console.warn('Below is not a valid relative point');
+        console.warn(this.relativePoints[i]);
         this.error = true;
         break;
       }

@@ -40,6 +40,7 @@ exports.api = {
 exports.errors = {
   db_boards_null:       10101,
   db_collections_null:  10102,
+  db_media_null:        10103,
   
   db_insert_error:      10201,
   db_find_error:        10202,
@@ -62,6 +63,8 @@ exports.phrases = {
   collection_not_found:                               'The requested collection could not be found',
 
   media_new_requires_board_id:                        'board_id is required',
+  media_parse_unable:                                 'Unable to determine media type and information',
+  media_insert_unable:                                'Unable to insert media to board',
   
   unknown_error:                                      'An unknown error has occured'
 };
