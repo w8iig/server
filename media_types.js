@@ -166,6 +166,6 @@ notExports.Path = function(x, y, rotation, relativePoints, thickness, color) {
   }
 
   if (!this._isNonNegativeInt(this.thickness)) this.error = true;
-  if (!this._isHexColor(this.color)) this.error = truee;
+  if (!this._isHexColor(this.color)) this.error = true;
 }
 util.inherits(notExports.Path, notExports.Media);

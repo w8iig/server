@@ -96,7 +96,6 @@ if (app && app.config && app.board) {
           stage.on('message:from-outside', function(dataFromOutside) {
             var event = dataFromOutside.event;
             var data = dataFromOutside.data;
-            console.log('event', event, data);
 
             switch (event) {
               case 'media-server-update':
@@ -126,6 +125,69 @@ if (app && app.config && app.board) {
                 break;
             }
           }); // stage.on('message:from-outside',...
+
+          var currentPaths = {};
+          var currentCounters = {};
+          var pathDataFromDisplayObject = function(curentCounter, path) {
+            var absolutePoints = path.points();
+            var relativePoints = [];
+            for (var i = absolutePoints.length - 1; i > 0; i--) {
+              relativePoints.push({
+                x: absolutePoints[i][0] - absolutePoints[0][0],
+                y: absolutePoints[i][1] - absolutePoints[0][1]
+              });
+            };
+
+            c = color(path.attr('strokeColor'));
+            hex = '#' + String(c).substr(2, 6);
+
+            var data = {
+              type: 'path',
+              x: absolutePoints[0][0],
+              y: absolutePoints[0][1],
+              rotation: 0,
+              relativePoints: relativePoints,
+              thickness: path.attr('strokeWidth'),
+              color: hex,
+              counter: curentCounter
+            };
+
+            if (typeof media[curentCounter] != 'undefined' && typeof media[curentCounter].uniqueId != 'undefined') {
+              data.uniqueId = media[curentCounter].uniqueId;
+            }
+
+            return data;
+          }
+          stage.on('multi:pointerdown', function(e) {
+            if (currentPaths[e.touchId] == null) {
+              currentPaths[e.touchId] = new Path().moveTo(e.stageX, e.stageY).stroke('red', 3);
+              currentPaths[e.touchId].addTo(stage);
+              currentCounters[e.touchId] = counter;
+              counter++;
+            }
+          });
+          stage.on('multi:pointerup', function(e) {
+            if (typeof currentPaths[e.touchId] != 'undefined' && currentPaths[e.touchId] != null) {
+              media[currentCounters[e.touchId]] = pathDataFromDisplayObject(currentCounters[e.touchId], currentPaths[e.touchId]);
+              displayObjects[currentCounters[e.touchId]] = currentPaths[e.touchId];
+
+              currentPaths[e.touchId] = null
+            }
+          });
+          stage.on('multi:drag', function(e) {
+            if (typeof currentPaths[e.touchId] != 'undefined' && currentPaths[e.touchId] != null) {
+              var data = pathDataFromDisplayObject(currentCounters[e.touchId], currentPaths[e.touchId]);
+              media[currentCounters[e.touchId]] = data;
+              displayObjects[currentCounters[e.touchId]] = currentPaths[e.touchId];
+
+              currentPaths[e.touchId].lineTo(e.stageX, e.stageY);
+
+              stage.sendMessage('from-inside', {
+                event: 'media-update',
+                data: data
+              });
+            }            
+          });
 
           var drawMediaByCounter = function(mediaCounter) {
             var mediaSingle = media[mediaCounter];
@@ -164,7 +226,6 @@ if (app && app.config && app.board) {
                 for (var i = mediaSingle.relativePoints.length - 1; i >= 0; i--) {
                   displayObject.lineTo(mediaSingle.relativePoints[i].x + mediaSingle.x, mediaSingle.relativePoints[i].y + mediaSingle.y);
                 };
-                displayObject.closePath();
                 displayObject.stroke(mediaSingle.color, mediaSingle.thickness);
                 break;
               case 'image':
@@ -179,8 +240,8 @@ if (app && app.config && app.board) {
             }
           }; // var drawMediaByCounter = ...
         },
-        width: 500,
-        height: 500
+        width: 2000,
+        height: 2000
       }); // canvas = bonsai.setup(...)
     });
   })(jQuery);
