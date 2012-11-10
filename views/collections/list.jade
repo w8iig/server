@@ -1,0 +1,14 @@
+extends ../layout
+
+block head
+  
+
+block content
+  div.collections_list
+
+    div.count Collections: #{count}
+    
+    ul
+      each collection in collections
+        li
+          a(href='/collections/#{collection.collectionId}') #{collection.collectionName}

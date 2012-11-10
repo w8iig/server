@@ -30,10 +30,7 @@ exports.routeIndexGet = function(req, res) {
 
     var data = [];
     for (var i = collections.length - 1; i >= 0; i--) {
-      data.push({
-        collectionId: collections[i]._id,
-        collectionName: collections[i].collectionName
-      });
+      data.push(db.collections.prepare(collections[i]));
     };
 
     res.send(data);
@@ -61,21 +58,17 @@ exports.routeView = function(req, res) {
 
     var data = db.collections.prepare(collection);
     data.boards = [];
-    var sendData = function() {
-      res.send(data);
-    }
 
     db.boards.getBoardsByCollectionId(collectionId, function(boards_get_error, boards) {
       if (boards_get_error) {
         // ignore error
-        return;
       }
 
       for (var i = boards.length - 1; i >= 0; i--) {
         data.boards.push(db.boards.prepare(boards[i]));
       };
 
-      sendData();
+      res.send(data);
     });
   });
 };

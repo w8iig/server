@@ -20,6 +20,8 @@ var mongodb = mongoskin.db(config.mongodb_url, { safe: true }).open(function(err
   exports.boards.count(function(_, numberOfBoards) {
     console.log('mongodb.boards: count = %d', numberOfBoards);
   });
+
+  media = mongodb.bind('media');
 });
 
 exports.boards = {
@@ -34,7 +36,7 @@ exports.boards = {
   create: function(collectionId, callback) {
     // callback = function(err, board) {};
     if (boards == null) {
-      callback(config.errors.db_boards_null, '');
+      callback(config.errors.db_boards_null, null);
       console.warn('mongodb: boards collection is null');
       return;
     }
@@ -51,9 +53,9 @@ exports.boards = {
         created: Math.round(new Date().getTime() / 1000)
       };
 
-      boards.insert(newBoard, {}, function(insert_error, insert_results) {
+      boards.insert(newBoard, { safe: true }, function(insert_error, insert_results) {
         if (insert_error) {
-          callback(config.errors.db_insert_error, '');
+          callback(config.errors.db_insert_error, null);
           console.warn('mongodb.boards: insert error (%s)', insert_error.message);
           return;
         }
@@ -128,8 +130,14 @@ exports.boards = {
   getBoardsByCollectionId: function(collectionId, callback) {
     // callback = function(err, boards) {};
     if (boards == null) {
-      callback(config.errors.db_boards_null, null);
+      callback(config.errors.db_boards_null, []);
       console.warn('mongodb: boards collection is null');
+      return;
+    }
+
+    if (collectionId.length != 12 && collectionId.length != 24) {
+      // invalid collection id (according to MongoDB document)
+      callback(0, []);
       return;
     }
     
@@ -161,7 +169,7 @@ exports.collections = {
       return;
     }
 
-    collections.insert({ collectionName: collectionName }, {}, function(insert_error, insert_results) {
+    collections.insert({ collectionName: collectionName }, { safe: true }, function(insert_error, insert_results) {
       if (insert_error) {
         callback(config.errors.db_insert_error, null);
         console.warn('mongodb.collections: insert error (%s)', insert_error.message);
@@ -217,11 +225,100 @@ exports.collections = {
       console.warn('mongodb: collections collection is null');
       return;
     }
+
+    if (collectionId.length != 12 && collectionId.length != 24) {
+      // invalid collection id (according to MongoDB document)
+      callback(0, null);
+      return;
+    }
     
     collections.find({ _id: new mongodb.ObjectID(collectionId) }).limit(2).toArray(function(find_error, find_results) {
       if (find_error) {
         callback(config.errors.db_find_error, 0);
         console.warn('mongodb.collections: find error (%s)', count_error.message);
+        return;
+      }
+      
+      if (find_results.length == 1) {
+        callback(0, find_results[0]);
+      } else {
+        callback(0, null);
+      }
+    });
+  }
+};
+
+exports.media = {
+  prepare: function(media) {
+    var prepared = media.data;
+    prepared.boardId = media.boardId;
+    prepared.uniqueId = media.uniqueId;
+
+    return prepared;
+  },
+
+  insert: function(boardId, uniqueId, mediaData, callback) {
+    // callback = function(err, media) {};
+    if (media == null) {
+      callback(config.errors.db_media_null, '');
+      console.warn('mongodb: media collection is null');
+      return;
+    }
+
+    var newMedia = {
+      boardId: boardId,
+      uniqueId: uniqueId,
+      data: mediaData
+    };
+    
+    media.update(
+      { boardId: boardId, uniqueId: uniqueId },
+      newMedia,
+      { safe: true, upsert: true },
+      function(insert_error) {
+      if (insert_error) {
+        callback(config.errors.db_insert_error, null);
+        console.warn('mongodb.media: insert error (%s)', insert_error.message);
+        return;
+      }
+
+      if (callback) {
+        callback(0, newMedia);
+      }
+    });
+  },
+
+  getMediaByBoardId: function(boardId, callback) {
+    // callback = function(err, mediaMany) {};
+    if (media == null) {
+      callback(config.errors.db_media_null, []);
+      console.warn('mongodb: media collection is null');
+      return;
+    }
+    
+    media.find({ boardId: boardId }).toArray(function(find_error, find_results) {
+      if (find_error) {
+        callback(config.errors.db_find_error, null);
+        console.warn('mongodb.boards: find error (%s)', find_error.message);
+        return;
+      }
+      
+      callback(0, find_results);
+    });
+  },
+
+  getMediaByUniqueId: function(boardId, uniqueId, callback) {
+    // callback = function(err, media) {};
+    if (media == null) {
+      callback(config.errors.db_media_null, null);
+      console.warn('mongodb: media collection is null');
+      return;
+    }
+    
+    media.find({ boardId: boardId, uniqueId: uniqueId }).limit(2).toArray(function(find_error, find_results) {
+      if (find_error) {
+        callback(config.errors.db_find_error, null);
+        console.warn('mongodb.boards: find error (%s)', find_error.message);
         return;
       }
       

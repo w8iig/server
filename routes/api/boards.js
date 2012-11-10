@@ -42,11 +42,17 @@ exports.routeView = function(req, res) {
 
     var data = db.boards.prepare(board);
     data.media = [];
-    var sendData = function() {
-      res.send(data);
-    }
 
-    // TODO: get media from database
-    sendData();
+    db.media.getMediaByBoardId(boardId, function(media_get_error, mediaMany) {
+      if (media_get_error) {
+        // ignore error
+      }
+
+      for (var i = mediaMany.length - 1; i >= 0; i--) {
+        data.media.push(db.media.prepare(mediaMany[i]));
+      };
+
+      res.send(data);
+    });
   });
 };

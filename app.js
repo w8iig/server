@@ -17,9 +17,9 @@ var db = require('./db');
 app.configure(function(){
   app.expose({ config: config });
   
-  app.set('port', config.port);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
+  app.set('config', config);
   app.use(express.favicon());
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
@@ -46,25 +46,31 @@ if (process.env.PORT && false) {
 app.get(config.echo.route, require('./routes/echo').route);
 app.get(config.bonsai.route, require('./routes/bonsai').route);
 
-app.get('/', require('./routes/boards').routeRoot);
+app.get('/', function(req, res) {
+  res.render('index');
+});
+
+app.get(config.collections.routeIndex, require('./routes/collections').routeIndex);
+app.get(config.collections.routeView, require('./routes/collections').routeView);
 app.get(config.boards.routeIndex, require('./routes/boards').routeIndex);
 app.get(config.boards.routeView, require('./routes/boards').routeView);
 
 app.post(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexPost);
 app.get(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexGet);
 app.get(config.api.collections.routeView, require('./routes/api/collections').routeView);
-
 app.post(config.api.boards.routeIndex, require('./routes/api/boards').routeIndex);
 app.get(config.api.boards.routeView, require('./routes/api/boards').routeView);
+app.post(config.api.media.routeIndex, require('./routes/api/media').routeIndex);
 
-server.listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+server.listen(app.get('config').port, function(){
+  console.log("Express server listening on port " + app.get('config').port);
 });
 
 var ioEcho = io.of(config.echo.route).on('connection', function (socket) {
   socket.on(config.echo.messageFromClient, function (data) {
     data.socketId = socket.id;
     ioEcho.emit(config.echo.messageFromServer, data);
+    console.log(data);
   });
 });
 
@@ -74,3 +80,13 @@ var ioBonsai = io.of(config.bonsai.route).on('connection', function (socket) {
     socket.broadcast.emit(config.bonsai.messageFromServer, data);
   });
 });
+
+var ioMediaHandler = require('./routes/media').socketHandler;
+var ioMediaInternalHandler = require('./routes/media').internalHandler;
+var ioMedia = io.of(config.media.routeIndex).on('connection', function(socket) {
+  ioMediaHandler(ioMedia, socket);
+});
+require('./routes/api/media').newMediaEmitter.on(config.media.messageInternalUpdate, function(data) {
+  ioMediaInternalHandler(ioMedia, data);
+});
+

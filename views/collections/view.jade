@@ -4,10 +4,11 @@ block head
   
 
 block content
-  div.boards_list
+  div Viewing collection #{collection.collectionName} (#{collection.collectionId})
 
-    div.count Boards: #{count}
-    
+  div.boards_list
+    div.count Collection Boards: #{boards.length}
+
     ul
       each board in boards
         li

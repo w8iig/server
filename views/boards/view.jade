@@ -1,9 +1,8 @@
 extends ../layout
 
 block head
-  
+  script(src='/socket.io/socket.io.js')
+  script(src='/javascripts/boards/view.js')
 
 block content
-  div
-    span Viewing board #
-    span= board.boardId
+  div Viewing board #{board.boardId}
