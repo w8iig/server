@@ -20,7 +20,9 @@ exports.routeIndex = function(req, res) {
   var getBoards = function(callback) {
     db.boards.getAll(function(get_error, get_boards) {
       // intentionally ignore error
-      boards = get_boards;
+      for (var i = get_boards.length - 1; i >= 0; i--) {
+        boards.push(db.boards.prepare(get_boards[i]));
+      };
       callback();
     });
   };
@@ -42,10 +44,15 @@ exports.routeView = function(req, res) {
       res.render('error', { message: config.phrases.boards_get_error, code: err });
       return;
     }
+
+    if (board == null) {
+      res.render('error', { message: config.phrases.board_not_found, code: 0 });
+      return;
+    }
     
     res.render('boards/view', {
       title: board.boardId,
-      board: board
+      board: db.boards.prepare(board)
     });
   });
 };

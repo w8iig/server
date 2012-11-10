@@ -13,8 +13,12 @@ exports.bonsai = {
   messageFromServer: 'bonsai-echo'
 };
 
+exports.collections = {
+  routeIndex: '/collections',
+  routeView: '/collections/:collectionId'
+};
+
 exports.boards = {
-  routePrefix: '/boards/',
   routeIndex: '/boards',
   routeView: '/boards/:boardId'
 };

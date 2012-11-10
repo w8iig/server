@@ -128,8 +128,14 @@ exports.boards = {
   getBoardsByCollectionId: function(collectionId, callback) {
     // callback = function(err, boards) {};
     if (boards == null) {
-      callback(config.errors.db_boards_null, null);
+      callback(config.errors.db_boards_null, []);
       console.warn('mongodb: boards collection is null');
+      return;
+    }
+
+    if (collectionId.length != 12 && collectionId.length != 24) {
+      // invalid collection id (according to MongoDB document)
+      callback(0, []);
       return;
     }
     
@@ -215,6 +221,12 @@ exports.collections = {
     if (collections == null) {
       callback(config.errors.db_collections_null, null);
       console.warn('mongodb: collections collection is null');
+      return;
+    }
+
+    if (collectionId.length != 12 && collectionId.length != 24) {
+      // invalid collection id (according to MongoDB document)
+      callback(0, null);
       return;
     }
     

@@ -30,10 +30,7 @@ exports.routeIndexGet = function(req, res) {
 
     var data = [];
     for (var i = collections.length - 1; i >= 0; i--) {
-      data.push({
-        collectionId: collections[i]._id,
-        collectionName: collections[i].collectionName
-      });
+      data.push(db.collections.prepare(collections[i]));
     };
 
     res.send(data);
