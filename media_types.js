@@ -28,6 +28,10 @@ exports.create = function(data) {
   }
 }
 
+exports.generateUniqueId = function(identifier, counter) {
+  return '' + identifier + '_' + counter;
+}
+
 notExports.Media = function(type, x, y, rotation) {
   this.type = type;
   this.error = false;

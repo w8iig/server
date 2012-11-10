@@ -46,6 +46,8 @@ exports.routeView = function(req, res) {
       return;
     }
     
+
+    res.expose({ board: board });
     res.render('boards/view', {
       title: board.boardId,
       board: db.boards.prepare(board)

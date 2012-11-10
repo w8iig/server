@@ -20,8 +20,21 @@ exports.collections = {
 
 exports.boards = {
   routeIndex: '/boards',
-  routeView: '/boards/:boardId'
+  routeView: '/boards/:boardId',
 };
+
+exports.media = {
+  routeIndex: '/media',
+
+
+  messageSubscribe: 'media-subscribe', // data = boardId
+  messageFromServerError: 'media-error', // data = message (error=?, code=?)
+  messageFromServerNotifyUniqueId: 'media-notify-unique-id',
+  messageUpdate: 'media-update', // data = media data
+  messageInternalUpdate: 'media-internal-update', // data = media data
+  messageFromServerUpdate: 'media-server-update', // data = media data
+
+}
 
 exports.api = {
   collections: {
@@ -63,8 +76,11 @@ exports.phrases = {
   collection_not_found:                               'The requested collection could not be found',
 
   media_new_requires_board_id:                        'board_id is required',
+  media_new_requires_identifier_counter:              'identifier and counter are required',
   media_parse_unable:                                 'Unable to determine media type and information',
   media_insert_unable:                                'Unable to insert media to board',
-  
+  media_update_not_subscribed:                        'Subscription is required before accepting update requests',
+  media_update_counter_is_required:                   'counter is required to update media, just use an self-increased integer!',
+
   unknown_error:                                      'An unknown error has occured'
 };

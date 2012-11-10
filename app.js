@@ -80,3 +80,13 @@ var ioBonsai = io.of(config.bonsai.route).on('connection', function (socket) {
     socket.broadcast.emit(config.bonsai.messageFromServer, data);
   });
 });
+
+var ioMediaHandler = require('./routes/media').socketHandler;
+var ioMediaInternalHandler = require('./routes/media').internalHandler;
+var ioMedia = io.of(config.media.routeIndex).on('connection', function(socket) {
+  ioMediaHandler(ioMedia, socket);
+});
+require('./routes/api/media').newMediaEmitter.on(config.media.messageInternalUpdate, function(data) {
+  ioMediaInternalHandler(ioMedia, data);
+});
+
