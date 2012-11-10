@@ -252,7 +252,9 @@ exports.media = {
   prepare: function(media) {
     var prepared = media.data;
     prepared.mediaId = media._id;
-    prepared.boardId = media.boardId;
+
+    // TODO: reconsider this?
+    // prepared.boardId = media.boardId;
 
     return prepared;
   },
