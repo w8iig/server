@@ -31,6 +31,9 @@ exports.api = {
   boards: {
     routeIndex: '/api/boards',
     routeView: '/api/boards/:boardId'
+  },
+  media: {
+    routeIndex: '/api/media'
   }
 };
 
@@ -57,6 +60,8 @@ exports.phrases = {
   collections_get_unable:                             'An error has occured while attempting to get collection data from database',
   collections_get_requires_id:                        'collection_id is required',
   collection_not_found:                               'The requested collection could not be found',
+
+  media_new_requires_board_id:                        'board_id is required',
   
   unknown_error:                                      'An unknown error has occured'
 };
