@@ -1,14 +1,20 @@
 var mongoskin = require('mongoskin');
 
 var config = require('./config');
+var collections = null;
 var boards = null;
 var mongodb = mongoskin.db(config.mongodb_url, { safe: true }).open(function(err, db) {
   console.log('mongodb is connected');
+
+  collections = mongodb.bind('collections');
+  exports.collections.count(function(_, numberOfCollections) {
+    console.log('mongodb.collections: count = %d', numberOfCollections);
+  });
   
   boards = mongodb.bind('boards');
   exports.boards.count(function(_, numberOfBoards) {
     console.log('mongodb.boards: count = %d', numberOfBoards);
-  })
+  });
 });
 
 exports.boards = {
@@ -94,6 +100,95 @@ exports.boards = {
       if (find_error) {
         callback(config.errors.db_find_error, null);
         console.warn('mongodb.boards: find error (%s)', find_error.message);
+        return;
+      }
+      
+      if (find_results.length == 1) {
+        callback(0, find_results[0]);
+      } else {
+        callback(0, null);
+      }
+    });
+  }
+};
+
+exports.collections = {
+  prepare: function(collection) {
+    return {
+      collectionId: collection._id,
+      collectionName: collection.collectionName
+    };
+  },
+
+  create: function(collectionName, callback) {
+    // callback = function(err, newCollectionId) {};
+    if (collections == null) {
+      callback(config.errors.db_collections_null, null);
+      console.warn('mongodb: collections collection is null');
+      return;
+    }
+
+    collections.insert({ collectionName: collectionName }, {}, function(insert_error, insert_results) {
+      if (insert_error) {
+        callback(config.errors.db_insert_error, null);
+        console.warn('mongodb.collections: insert error (%s)', insert_error.message);
+        return;
+      }
+
+      callback(0, insert_results[0]);
+    });
+  },
+
+  count: function(callback) {
+    // callback = function(err, numberOfCollections) {};
+    if (collections == null) {
+      callback(config.errors.db_collections_null, 0);
+      console.warn('mongodb: collections collection is null');
+      return;
+    }
+    
+    collections.find().count(function(count_error, numberOfCollections) {
+      if (count_error) {
+        callback(config.errors.db_count_error, 0);
+        console.warn('mongodb.collections: count error (%s)', count_error.message);
+        return;
+      }
+      
+      callback(0, numberOfCollections);
+    });
+  },
+  
+  getAll: function(callback) {
+    // callback = function(err, collections) {};
+    if (collections == null) {
+      callback(config.errors.db_collections_null, []);
+      console.warn('mongodb: collections collection is null');
+      return;
+    }
+    
+    collections.find().toArray(function(find_error, find_results) {
+      if (find_error) {
+        callback(config.errors.db_find_error, 0);
+        console.warn('mongodb.collections: find error (%s)', count_error.message);
+        return;
+      }
+      
+      callback(0, find_results);
+    });
+  },
+  
+  getCollectionById: function(collectionId, callback) {
+    // callback = function(err, collectionObject) {};
+    if (collections == null) {
+      callback(config.errors.db_collections_null, null);
+      console.warn('mongodb: collections collection is null');
+      return;
+    }
+    
+    collections.find({ collectionId: collectionId }).limit(2).toArray(function(find_error, find_results) {
+      if (find_error) {
+        callback(config.errors.db_find_error, 0);
+        console.warn('mongodb.collections: find error (%s)', count_error.message);
         return;
       }
       

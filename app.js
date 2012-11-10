@@ -48,6 +48,9 @@ app.get('/', require('./routes/boards').routeRoot);
 app.get(config.boards.routeIndex, require('./routes/boards').routeIndex);
 app.get(config.boards.routeView, require('./routes/boards').routeView);
 
+app.post(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexPost);
+app.get(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexGet);
+
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
