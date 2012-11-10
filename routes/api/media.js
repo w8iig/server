@@ -52,3 +52,36 @@ exports.routeIndex = function(req, res) {
     });
   });
 };
+
+exports.routeImageUpload = function(req, res) {
+  if (typeof req.files.image == 'undefined') {
+    res.send(403, { error: config.phrases.media_image_upload_image_required, code: 0});
+    return;
+  }
+
+  var uploadedImage = req.files.image;
+  var ext = uploadedImage.name.substr(-4).toLowerCase();
+
+  if (uploadedImage.size == 0
+    || (
+      ext != '.png'
+      && ext != '.jpg'
+      && ext != '.gif'
+    )) {
+    console.log(uploadedImage, ext);
+    res.send(403, { error: config.phrases.media_image_upload_image_only, code: 0});
+    return;
+  }
+
+  // TODO: we should do better here to avoid overwriting existing files
+  // probably some kind of counter and/or mixed date values?
+  var outputPath = config.api.media.outputDirectory + '/' + uploadedImage.name;
+
+  require('fs').rename(uploadedImage.path, __dirname + '/../..' + outputPath, function(error) {
+    console.log(error);
+
+    res.send({
+      url: outputPath
+    });
+  });
+}

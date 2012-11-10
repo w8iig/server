@@ -47,7 +47,10 @@ exports.api = {
     routeView: '/api/boards/:boardId'
   },
   media: {
-    routeIndex: '/api/media'
+    routeIndex: '/api/media',
+    routeImageUpload: '/api/media/image-upload',
+
+    outputDirectory: '/public/uploaded-image'
   }
 };
 
@@ -82,6 +85,8 @@ exports.phrases = {
   media_insert_unable:                                'Unable to insert media to board',
   media_update_not_subscribed:                        'Subscription is required before accepting update requests',
   media_update_counter_is_required:                   'counter is required to update media, just use an self-increased integer!',
+  media_image_upload_image_required:                  'Image upload (image) is required',
+  media_image_upload_image_only:                      'Only images are allowed',
 
   unknown_error:                                      'An unknown error has occured'
 };

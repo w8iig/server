@@ -63,6 +63,7 @@ app.get(config.api.collections.routeView, require('./routes/api/collections').ro
 app.post(config.api.boards.routeIndex, require('./routes/api/boards').routeIndex);
 app.get(config.api.boards.routeView, require('./routes/api/boards').routeView);
 app.post(config.api.media.routeIndex, require('./routes/api/media').routeIndex);
+app.post(config.api.media.routeImageUpload, require('./routes/api/media').routeImageUpload);
 
 server.listen(app.get('config').port, function(){
   console.log("Express server listening on port " + app.get('config').port);
