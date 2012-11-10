@@ -45,11 +45,25 @@ exports.routeView = function(req, res) {
       res.render('error', { message: config.phrases.board_not_found, code: 0 });
       return;
     }
-    
-    res.expose({ board: board });
-    res.render('boards/view', {
-      title: board.boardId,
-      board: db.boards.prepare(board)
+
+    var board = db.boards.prepare(board);
+    var media = [];
+
+    db.media.getMediaByBoardId(board.boardId, function(media_get_error, mediaMany) {
+      if (media_get_error) {
+        // ignore error
+      }
+
+      for (var i = mediaMany.length - 1; i >= 0; i--) {
+        media.push(db.media.prepare(mediaMany[i]));
+      };
+
+      res.expose({ board: board });
+      res.expose({ media: media });
+      res.render('boards/view', {
+        title: board.boardId,
+        board: db.boards.prepare(board)
+      });
     });
   });
 };
@@ -69,7 +83,7 @@ exports.routeThumbnail = function(req, res) {
   ctx.lineTo(50, 102);
   ctx.lineTo(50 + te.width, 102);
   ctx.stroke();
-
+ 
   canvas.toBuffer(function(error, buffer) {
     res.set('Content-Type', 'image/png');
     res.send(buffer);
