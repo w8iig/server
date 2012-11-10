@@ -40,24 +40,49 @@ if (app && app.config && app.board) {
           }
         });
 
-        if (canvas != null) {
-          canvas.on('message:from-inside', function(dataFromInside) {
-            if (socket) {
-              socket.emit(dataFromInside.event, dataFromInside.data);
-            }
-          });
-
-          // force draw media loaded on page load
-          if (app.media) {
-            for (var i = app.media.length - 1; i >= 0; i--) {
-              canvas.sendMessage('from-outside', {
-                event: app.config.media.messageFromServerUpdate,
-                data: app.media[i]
-              });
-            };
-          }
-        }
+        setupCanvasListener();
       });
+
+      var setupCanvasListener = function() {
+        canvas.on('message:from-inside', function(dataFromInside) {
+          if (socket) {
+            socket.emit(dataFromInside.event, dataFromInside.data);
+          }
+        });
+
+        canvas.on('message:from-inside-youtube', function(dataFromInside) {
+          var elementId = 'youtube_' + dataFromInside.counter;
+          var $iframe = $('#' + elementId);
+
+          if ($iframe.length == 0) {
+            $iframe = $('<iframe />');
+          }
+
+          $iframe.attr('id', elementId);
+          $iframe.css('position', 'absolute')
+            .css('left', dataFromInside.media.x + 'px')
+            .css('top', dataFromInside.media.y + 'px')
+            .css('-moz-transform', 'rotate(' + dataFromInside.media.rotation + 'deg)')
+            .css('-webkit-transform', 'rotate(' + dataFromInside.media.rotation + 'deg)')
+            .css('-o-transform', 'rotate(' + dataFromInside.media.rotation + 'deg)')
+            .css('-ms-transform', 'rotate(' + dataFromInside.media.rotation + 'deg)');
+          $iframe.attr('src', 'http://www.youtube.com/embed/' + dataFromInside.media.id);
+          $iframe.attr('width', dataFromInside.media.width);
+          $iframe.attr('height', dataFromInside.media.height);
+
+          $('#canvasContainer').append($iframe);
+        });
+
+        // force draw media loaded on page load
+        if (app.media) {
+          for (var i = app.media.length - 1; i >= 0; i--) {
+            canvas.sendMessage('from-outside', {
+              event: app.config.media.messageFromServerUpdate,
+              data: app.media[i]
+            });
+          };
+        }
+      }
       
       canvas = bonsai.setup({
         // runnerContext: bonsai.IframeRunnerContext
@@ -66,7 +91,7 @@ if (app && app.config && app.board) {
           var counter = 0;
           var media = {};
           var counterByUniqueId = {};
-          var shapes = {};
+          var displayObjects = {};
           
           stage.on('message:from-outside', function(dataFromOutside) {
             var event = dataFromOutside.event;
@@ -100,43 +125,63 @@ if (app && app.config && app.board) {
                 console.error(data);
                 break;
             }
-          });
+          }); // stage.on('message:from-outside',...
 
           var drawMediaByCounter = function(mediaCounter) {
             var mediaSingle = media[mediaCounter];
             if (typeof mediaSingle == 'undefined') return; // media not found?
 
-            var shape = shapes[mediaCounter];
-            if (typeof shape == 'undefined') {
+            var displayObject = displayObjects[mediaCounter];
+            if (typeof displayObject == 'undefined') {
               // this is a brand new media (never drawn before)
-              // we have to create a new shape object for it
+              // we have to create a new display object for it
               switch (mediaSingle.type) {
                 case 'path':
-                  shape = new Path();
+                  displayObject = new Path();
+                  displayObject.addTo(stage);
+                  break;
+                case 'image':
+                  displayObject = new Bitmap(mediaSingle.src).on('load', function() {
+                    this.addTo(stage);
+                  });
+                  break;
+                case 'youtube':
+                  displayObject = {
+                    counter: mediaCounter,
+                    media: mediaSingle
+                  }
                   break;
               }
 
-              shape.addTo(stage);
-              shapes[mediaCounter] = shape;
+              displayObjects[mediaCounter] = displayObject;
             }
 
             // update media data
             switch (mediaSingle.type) {
               case 'path':
-                shape.clear();
-                shape.moveTo(mediaSingle.x, mediaSingle.y);
+                displayObject.clear();
+                displayObject.moveTo(mediaSingle.x, mediaSingle.y);
                 for (var i = mediaSingle.relativePoints.length - 1; i >= 0; i--) {
-                  shape.lineTo(mediaSingle.relativePoints[i].x + mediaSingle.x, mediaSingle.relativePoints[i].y + mediaSingle.y);
+                  displayObject.lineTo(mediaSingle.relativePoints[i].x + mediaSingle.x, mediaSingle.relativePoints[i].y + mediaSingle.y);
                 };
-                shape.closePath();
-                shape.stroke(mediaSingle.color, mediaSingle.thickness);
+                displayObject.closePath();
+                displayObject.stroke(mediaSingle.color, mediaSingle.thickness);
+                break;
+              case 'image':
+                displayObject.attr('x', mediaSingle.x);
+                displayObject.attr('y', mediaSingle.y);
+                displayObject.attr('rotation', mediaSingle.rotation);
+                break;
+              case 'youtube':
+                displayObject.media = mediaSingle;
+                stage.sendMessage('from-inside-youtube', displayObject);
                 break;
             }
-          };
+          }; // var drawMediaByCounter = ...
         },
         width: 500,
         height: 500
-      });
+      }); // canvas = bonsai.setup(...)
     });
   })(jQuery);
 }

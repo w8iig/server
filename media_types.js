@@ -82,7 +82,8 @@ notExports.Media.prototype = {
 
   _isString: function(string) {
     if (typeof string != 'string'
-      || string.length == 0) {
+      || string.length == 0
+      || string === 'undefined') {
       console.warn('%s is not a valid string', string);
       return false;
     } else {
