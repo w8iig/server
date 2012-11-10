@@ -70,6 +70,7 @@ var ioEcho = io.of(config.echo.route).on('connection', function (socket) {
   socket.on(config.echo.messageFromClient, function (data) {
     data.socketId = socket.id;
     ioEcho.emit(config.echo.messageFromServer, data);
+    console.log(data);
   });
 });
 
