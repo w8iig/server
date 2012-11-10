@@ -71,3 +71,25 @@ exports.routeView = function(req, res) {
     });
   });
 };
+
+exports.routeThumbnail = function(req, res) {
+  var Canvas = require('canvas')
+    , canvas = new Canvas(200, 200)
+    , ctx = canvas.getContext('2d');
+
+  ctx.font = '30px Impact';
+  ctx.rotate(.1);
+  ctx.fillText("Yay!", 50, 100);
+
+  var te = ctx.measureText('Yay!');
+  ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+  ctx.beginPath();
+  ctx.lineTo(50, 102);
+  ctx.lineTo(50 + te.width, 102);
+  ctx.stroke();
+ 
+  canvas.toBuffer(function(error, buffer) {
+    res.set('Content-Type', 'image/png');
+    res.send(buffer);
+  });
+};

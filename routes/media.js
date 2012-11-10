@@ -54,8 +54,13 @@ exports.socketHandler = function(sockets, socket) {
 
       // broadcast the media update
       var serverUpdateData = mediaObject.toJson();
-      serverUpdateData.uniqueId = uniqueid;
-      sockets.in(boardId).broadcast.emit(config.media.messageFromServerUpdate, serverUpdateData);
+      serverUpdateData.uniqueId = uniqueId;
+
+      var roomSockets = sockets.clients(boardId);
+      for (socketId in roomSockets) {
+        if (socketId == socket.id) continue; // do not emit update back to the source socket
+        roomSockets[socketId].emit(config.media.messageFromServerUpdate, serverUpdateData);
+      }
 
       db.media.insert(boardId, uniqueId, mediaObject.toJson());
     }

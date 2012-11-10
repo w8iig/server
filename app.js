@@ -52,8 +52,10 @@ app.get('/', function(req, res) {
 
 app.get(config.collections.routeIndex, require('./routes/collections').routeIndex);
 app.get(config.collections.routeView, require('./routes/collections').routeView);
+app.get(config.collections.routeThumbnail, require('./routes/collections').routeThumbnail);
 app.get(config.boards.routeIndex, require('./routes/boards').routeIndex);
 app.get(config.boards.routeView, require('./routes/boards').routeView);
+app.get(config.boards.routeThumbnail, require('./routes/boards').routeThumbnail);
 
 app.post(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexPost);
 app.get(config.api.collections.routeIndex, require('./routes/api/collections').routeIndexGet);

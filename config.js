@@ -15,17 +15,18 @@ exports.bonsai = {
 
 exports.collections = {
   routeIndex: '/collections',
-  routeView: '/collections/:collectionId'
+  routeView: '/collections/:collectionId',
+  routeThumbnail: '/collections/:collectionId/thumbnail'
 };
 
 exports.boards = {
   routeIndex: '/boards',
   routeView: '/boards/:boardId',
+  routeThumbnail: '/boards/:boardId/thumbnail',
 };
 
 exports.media = {
   routeIndex: '/media',
-
 
   messageSubscribe: 'media-subscribe', // data = boardId
   messageFromServerError: 'media-error', // data = message (error=?, code=?)
