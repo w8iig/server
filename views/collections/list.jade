@@ -6,9 +6,7 @@ block head
 block content
   div.collections_list
 
-    div.count
-      span Collections: 
-      span= count
+    div.count Collections: #{count}
     
     ul
       each collection in collections

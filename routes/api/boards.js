@@ -42,11 +42,8 @@ exports.routeView = function(req, res) {
 
     var data = db.boards.prepare(board);
     data.media = [];
-    var sendData = function() {
-      res.send(data);
-    }
 
     // TODO: get media from database
-    sendData();
+    res.send(data);
   });
 };

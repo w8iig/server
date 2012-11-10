@@ -58,21 +58,17 @@ exports.routeView = function(req, res) {
 
     var data = db.collections.prepare(collection);
     data.boards = [];
-    var sendData = function() {
-      res.send(data);
-    }
 
     db.boards.getBoardsByCollectionId(collectionId, function(boards_get_error, boards) {
       if (boards_get_error) {
         // ignore error
-        return;
       }
 
       for (var i = boards.length - 1; i >= 0; i--) {
         data.boards.push(db.boards.prepare(boards[i]));
       };
 
-      sendData();
+      res.send(data);
     });
   });
 };

@@ -6,9 +6,7 @@ block head
 block content
   div.boards_list
 
-    div.count
-      span Boards: 
-      span= count
+    div.count Boards: #{count}
     
     ul
       each board in boards

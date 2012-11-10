@@ -5,3 +5,11 @@ block head
 
 block content
   div Viewing collection #{collection.collectionName} (#{collection.collectionId})
+
+  div.boards_list
+    div.count Collection Boards: #{boards.length}
+
+    ul
+      each board in boards
+        li
+          a(href='/boards/#{board.boardId}') #{board.boardId}

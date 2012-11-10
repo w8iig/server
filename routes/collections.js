@@ -52,10 +52,22 @@ exports.routeView = function(req, res) {
       res.render('error', { message: config.phrases.collection_not_found, code: 0 });
       return;
     }
-    
-    res.render('collections/view', {
-      title: collection.collectionName,
-      collection: db.collections.prepare(collection)
+
+    db.boards.getBoardsByCollectionId(collectionId, function(boards_get_error, get_boards) {
+      if (boards_get_error) {
+        // ignore error
+      }
+
+      var boards = [];
+      for (var i = get_boards.length - 1; i >= 0; i--) {
+        boards.push(db.boards.prepare(get_boards[i]));
+      };
+
+      res.render('collections/view', {
+        title: collection.collectionName,
+        collection: db.collections.prepare(collection),
+        boards: boards
+      });
     });
   });
 };
