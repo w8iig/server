@@ -4,6 +4,11 @@ var config = require('./config');
 var collections = null;
 var boards = null;
 var mongodb = mongoskin.db(config.mongodb_url, { safe: true }).open(function(err, db) {
+  if (err) {
+    console.error('mongodb is NOT connected (%s)', err.message);
+    return;
+  }
+  
   console.log('mongodb is connected');
 
   collections = mongodb.bind('collections');
@@ -29,7 +34,7 @@ exports.boards = {
   create: function(collectionId, callback) {
     // callback = function(err, board) {};
     if (boards == null) {
-      callback(config.errors.db_boards_null, null);
+      callback(config.errors.db_boards_null, '');
       console.warn('mongodb: boards collection is null');
       return;
     }
@@ -48,7 +53,7 @@ exports.boards = {
 
       boards.insert(newBoard, {}, function(insert_error, insert_results) {
         if (insert_error) {
-          callback(config.errors.db_insert_error, insert_result);
+          callback(config.errors.db_insert_error, '');
           console.warn('mongodb.boards: insert error (%s)', insert_error.message);
           return;
         }
@@ -62,7 +67,7 @@ exports.boards = {
   count: function(callback) {
     // callback = function(err, numberOfBoards) {};
     if (boards == null) {
-      callback(config.errors.db_boards_null, null);
+      callback(config.errors.db_boards_null, 0);
       console.warn('mongodb: boards collection is null');
       return;
     }
@@ -81,14 +86,14 @@ exports.boards = {
   getAll: function(callback) {
     // callback = function(err, boards) {};
     if (boards == null) {
-      callback(config.errors.db_boards_null, null);
+      callback(config.errors.db_boards_null, []);
       console.warn('mongodb: boards collection is null');
       return;
     }
     
     boards.find().toArray(function(find_error, find_results) {
       if (find_error) {
-        callback(config.errors.db_find_error, 0);
+        callback(config.errors.db_find_error, []);
         console.warn('mongodb.boards: find error (%s)', count_error.message);
         return;
       }
