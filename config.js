@@ -50,7 +50,7 @@ exports.api = {
     routeIndex: '/api/media',
     routeImageUpload: '/api/media/image-upload',
 
-    outputDirectory: '/public/uploaded-image'
+    outputDirectory: '/uploaded-image'
   }
 };
 

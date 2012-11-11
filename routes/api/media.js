@@ -77,7 +77,7 @@ exports.routeImageUpload = function(req, res) {
   // probably some kind of counter and/or mixed date values?
   var outputPath = config.api.media.outputDirectory + '/' + uploadedImage.name;
 
-  require('fs').rename(uploadedImage.path, __dirname + '/../..' + outputPath, function(error) {
+  require('fs').rename(uploadedImage.path, __dirname + '/../../public' + outputPath, function(error) {
     console.log(error);
 
     res.send({
