@@ -162,6 +162,7 @@ if (app && app.config && app.board) {
             if (currentPaths[e.touchId] == null) {
               currentPaths[e.touchId] = new Path().moveTo(e.stageX, e.stageY).stroke('red', 3);
               currentPaths[e.touchId].addTo(stage);
+              setupMediaDraggable(counter, currentPaths[e.touchId]);
               currentCounters[e.touchId] = counter;
               counter++;
             }
@@ -189,6 +190,133 @@ if (app && app.config && app.board) {
             }            
           });
 
+          var setupMediaDraggable = function(mediaCounter, displayObject) {
+            var touch1 = null;
+            var touch2 = null;
+
+            displayObject.on('multi:pointerdown', function(e) {
+              if (touch1 == null) {
+                touch1 = {
+                  touchId: e.touchId,
+                  x: e.stageX,
+                  y: e.stageY
+                };
+              } else if (touch2 == null) {
+                touch2 = {
+                  touchId: e.touchId,
+                  x: e.stageX,
+                  y: e.stageY
+                }
+              }
+            });
+
+            displayObject.on('multi:pointerup', function(e) {
+              if (touch1 != null && touch1.touchId == e.touchId) {
+                if (touch2 != null) {
+                  touch1 = {
+                    touchId: touch2.touchId,
+                    x: touch2.x,
+                    y: touch2.y
+                  };  
+                } else {
+                  touch1 = null;
+                }
+                
+                touch2 = null;
+              } else if (touch2 != null && touch2.touchId == e.touchId) {
+                touch2 = null;
+              }
+            });
+
+            displayObject.on('multi:drag', function(e) {
+              if (touch1 != null && touch2 == null && touch1.touchId == e.touchId) {
+                // moving
+                var x = parseInt(displayObject.attr('x')) + e.stageX - touch1.x;
+                var y = parseInt(displayObject.attr('y')) + e.stageY - touch1.y;
+
+                displayObject.attr('x', x);
+                displayObject.attr('y', y);
+
+                touch1.x = e.stageX;
+                touch1.y = e.stageY;
+
+                media[mediaCounter].x = x;
+                media[mediaCounter].y = y;
+
+                drawMediaByCounter(mediaCounter);
+
+                var data = media[mediaCounter];
+                data.counter = mediaCounter;
+                stage.sendMessage('from-inside', {
+                  event: 'media-update',
+                  data: data
+                });
+              } else if (touch1 != null && touch2 != null) {
+                // pinching
+                var xBefore = (touch1.x + touch2.x) / 2;
+                var yBefore = (touch1.y + touch2.y) / 2;
+                var distanceBefore = Math.sqrt(
+                  Math.pow(touch1.x - touch2.x, 2)
+                  + Math.pow(touch1.y - touch2.y, 2)
+                );
+                var alphaBefore = Math.atan((touch1.y - touch2.y) / (touch1.x - touch2.x));
+                
+                if (e.touchId == touch1.touchId) {
+                  touch1.x = e.stageX;
+                  touch1.y = e.stageY;
+                } else if (e.touchId == touch2.touchId) {
+                  touch2.x = e.stageX;
+                  touch2.y = e.stageY;
+                }
+                var xAfter = (touch1.x + touch2.x) / 2;
+                var yAfter = (touch1.y + touch2.y) / 2;
+                var distanceAfter = Math.sqrt(
+                  Math.pow(touch1.x - touch2.x, 2)
+                  + Math.pow(touch1.y - touch2.y, 2)
+                );
+                var alphaAfter = Math.atan((touch1.y - touch2.y) / (touch1.x - touch2.x));
+
+                var newX = parseInt(displayObject.attr('x')) + xAfter - xBefore;
+                var newY = parseInt(displayObject.attr('y')) + yAfter - yBefore;
+                var newRotation = parseDouble(displayObject.attr('rotation')) + alphaAfter - alphaBefore;
+                var newWidth = null;
+                var newHeight = null;
+                
+                displayObject.attr('x', newX);
+                displayObject.attr('y', newY);
+                displayObject.attr('rotation', newRotation);
+
+                if (media[mediaCounter].type == 'image'
+                  && distanceAfter > 0) {
+                  newWidth = parseInt(displayObject.attr('width')) * distanceAfter / distanceBefore;
+                  newHeight = parseInt(displayObject.attr('height')) * distanceAfter / distanceBefore;
+
+                  displayObject.attr('width', newWidth);
+                  displayObject.attr('height', newHeight);
+                }
+
+                media[mediaCounter].x = newX;
+                media[mediaCounter].y = newY;
+                media[mediaCounter].rotation = newRotation;
+
+                if (media[mediaCounter].type == 'image'
+                  && newWidth != null) {
+                  media[mediaCounter].width = newWidth;
+                  media[mediaCounter].height = newHeight;
+                }
+
+                drawMediaByCounter(mediaCounter);
+
+                var data = media[mediaCounter];
+                data.counter = mediaCounter;
+                stage.sendMessage('from-inside', {
+                  event: 'media-update',
+                  data: data
+                });
+              }
+            });
+          };
+
           var drawMediaByCounter = function(mediaCounter) {
             var mediaSingle = media[mediaCounter];
             if (typeof mediaSingle == 'undefined') return; // media not found?
@@ -201,10 +329,12 @@ if (app && app.config && app.board) {
                 case 'path':
                   displayObject = new Path();
                   displayObject.addTo(stage);
+                  setupMediaDraggable(mediaCounter, displayObject);
                   break;
                 case 'image':
                   displayObject = new Bitmap(mediaSingle.src).on('load', function() {
                     this.addTo(stage);
+                    setupMediaDraggable(mediaCounter, this);
                   });
                   break;
                 case 'youtube':
