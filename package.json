@@ -10,8 +10,7 @@
     "socket.io": "~0.9.11",
     "express-expose": "~0.3.3",
     "jade": "~0.27.7",
-    "mongoskin": "~0.4.4",
-    "canvas": "~0.13.1"
+    "mongoskin": "~0.4.4"
   },
   "engines": {
     "node": "0.8.x",
